@@ -2,7 +2,7 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "build": "remix build && npm run netlify",
+    "build": "remix build",
     "netlify": "netlify functions:build --src netlify/functions",
     "dev": "remix dev",
     "start": "remix-serve build",
