@@ -1,15 +1,29 @@
 import { redirect } from '@remix-run/node';
 import { Form, Link, useLoaderData } from "@remix-run/react";
-// import { getStoredNotes  } from "~/data/notes";
 import styles from "~/styles/noteDetails.css";
-import { deleteNote , getNotes , storeNotes ,updateNote} from '~/data/note.server';
+import { deleteNote , getNotes,updateNote} from '~/data/note.server';
+
+interface Note {
+  id: string;
+  title: string;
+}
+
+interface Params {
+  noteId: string;
+}
+
+
 
 export default function NoteDetailsPage() {
   const currData = useLoaderData();
 
   async function handleDelete() {
-    await deleteNote(currData.id);
-    return redirect('/notes');
+    try {
+      await deleteNote(currData.id);
+      return redirect('/notes');
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+    }
   }
 
   return (
@@ -30,7 +44,7 @@ export default function NoteDetailsPage() {
   );
 }
 
-function UpdateNoteForm({ note }) {
+function UpdateNoteForm({ note } : { note: Note }) {
   return (
     <Form method='post' action={`/notes/${note.id}`} >
       <label>
@@ -43,7 +57,7 @@ function UpdateNoteForm({ note }) {
   );
 }
 
-export async function action({ request, params }) {
+export async function action({ request, params } ) {
   if (request.method === 'DELETE') {
     await deleteNote(params.noteId);
     console.log('delete this note ======>',params.noteId)
@@ -51,26 +65,23 @@ export async function action({ request, params }) {
   } else if (request.method === 'POST') {
     const body = new URLSearchParams(await request.text());
     const updatedTitle = body.get('title');
-    const updatedContent = body.get('content');
+    // const updatedContent = body.get('content');
 
     try {
-      await updateNote(params.noteId, updatedTitle, updatedContent);
+      await updateNote(params.noteId, updatedTitle);
 
       // After updating, store the updated notes
       console.log('updated note ======>', updatedTitle)
-      // const updatedNotes = await getStoredNotes();
-      // await storeNotes(updatedNotes);
-
       return redirect('/notes');
     } catch (error) {
-      console.error('Failed to update note:', error.message);
+      // console.error('Failed to update note:', error.message);
       // Handle error, e.g., show an error message to the user
-      return redirect(`/notes/${params.noteId}`); // Redirect back to the details page
+      return redirect(`/notes`); // Redirect back to the details page
     }
   }
 }
 
-export async function loader({ params }) {
+export async function loader({ params } : { params: Params }) {
   const notes = await getNotes();
   const currentNode = notes.find((note) => note.id === params.noteId);
   return currentNode;

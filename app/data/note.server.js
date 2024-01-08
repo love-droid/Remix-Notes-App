@@ -31,12 +31,12 @@ export async function getNotes() {
 export async function deleteNote(id) {
     try {
         console.log("Inside deleteNote");
-        const note = await prisma.note.delete({
+         await prisma.note.delete({
             where: {
                 id: id,
             },
         });
-        return note;
+        // return note;
     } catch (error) {
         console.log(error);
         throw new Error('Error while deleting note');
